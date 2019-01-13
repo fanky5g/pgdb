@@ -48,6 +48,17 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:38ec74012390146c45af1f92d46e5382b50531247929ff3a685d2b2be65155ac"
+  name = "github.com/gomodule/redigo"
+  packages = [
+    "internal",
+    "redis",
+  ]
+  pruneopts = "UT"
+  revision = "9c11da706d9b7902c6da69c592f75637793fe121"
+  version = "v2.0.0"
+
+[[projects]]
   digest = "1:d4e6e8584d0a94ce567d237e19192dae44d57d2767ac7e1d7fbf5626d176381a"
   name = "github.com/jinzhu/gorm"
   packages = ["."]
@@ -153,6 +164,7 @@
   input-imports = [
     "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres",
     "github.com/flavioribeiro/gonfig",
+    "github.com/gomodule/redigo/redis",
     "github.com/jinzhu/gorm",
     "github.com/stretchr/testify/assert",
   ]

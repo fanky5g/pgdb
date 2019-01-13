@@ -9,10 +9,10 @@ import (
 func GetTestDbConfig() (gonfig.Gonfig, error) {
 	reader := strings.NewReader(`
 		{
-			"dbHost": "",
-			"dbName": "",
-			"dbUser": "",
-			"dbPass": ""
+			"dbHost": "localhost:5432",
+			"dbName": "test",
+			"dbUser": "test",
+			"dbPass": "test"
 		}
 	`)
 
