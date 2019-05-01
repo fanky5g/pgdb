@@ -68,7 +68,7 @@ func SendToQueue(conn *amqp.Connection, queue string, durable bool, payload inte
 	defer ch.Close()
 	q, err := ch.QueueDeclare(
 		queue,
-		false,
+		durable,
 		false,
 		false,
 		false,
