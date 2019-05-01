@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -9,18 +10,16 @@ import (
 // Message represents message received from listener for processing
 type Message struct {
 	MessageID string
-	Timestamp string
+	Timestamp time.Time
 	Body      []byte
 }
 
 // ListenerAction passes back message body to your provided callback for processing
-type ListenerAction func(Message, ack func(bool) error, nack func(bool, bool) error)
+type ListenerAction func(Message, func(bool) error, func(bool, bool) error)
 
 // RabbitMQConnect gets rabbitmq connection
-func RabbitMQConnect(address string) *amqp.Connection {
-	conn, err := amqp.Dial(address)
-	HandleError(err)
-	return conn
+func RabbitMQConnect(address string) (*amqp.Connection, error) {
+	return amqp.Dial(address)
 }
 
 // ListenToQueue creates a non blocking listener to rabbitmq
@@ -50,7 +49,7 @@ func ListenToQueue(conn *amqp.Connection, queue string, action ListenerAction) e
 
 	go func() {
 		for d := range msgs {
-			action(Message{d.MessageId, d.Timestamp, d.Body}, d.Ack, d.Nack)
+			action(Message{MessageID: d.MessageId, Timestamp: d.Timestamp, Body: d.Body}, d.Ack, d.Nack)
 		}
 	}()
 
@@ -59,16 +58,16 @@ func ListenToQueue(conn *amqp.Connection, queue string, action ListenerAction) e
 
 // SendToQueue broadcasts payload to queue
 func SendToQueue(conn *amqp.Connection, queue string, payload interface{}) error {
-	defer redisConn.Close()
+	defer conn.Close()
 
-	ch, err := redisConn.Channel()
+	ch, err := conn.Channel()
 	if err != nil {
 		return err
 	}
 
 	defer ch.Close()
 	q, err := ch.QueueDeclare(
-		name,
+		queue,
 		false,
 		false,
 		false,
