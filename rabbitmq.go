@@ -23,7 +23,7 @@ func RabbitMQConnect(address string) (*amqp.Connection, error) {
 }
 
 // ListenToQueue creates a non blocking listener to rabbitmq
-func ListenToQueue(conn *amqp.Connection, queue string, action ListenerAction) (chan bool, error) {
+func ListenToQueue(conn *amqp.Connection, queue string, durable bool, action ListenerAction) (chan bool, error) {
 	defer conn.Close()
 
 	ch, err := conn.Channel()
@@ -33,7 +33,7 @@ func ListenToQueue(conn *amqp.Connection, queue string, action ListenerAction) (
 
 	q, err := ch.QueueDeclare(
 		queue,
-		false,
+		durable,
 		false,
 		false,
 		false,
@@ -57,7 +57,7 @@ func ListenToQueue(conn *amqp.Connection, queue string, action ListenerAction) (
 }
 
 // SendToQueue broadcasts payload to queue
-func SendToQueue(conn *amqp.Connection, queue string, payload interface{}) error {
+func SendToQueue(conn *amqp.Connection, queue string, durable bool, payload interface{}) error {
 	defer conn.Close()
 
 	ch, err := conn.Channel()
