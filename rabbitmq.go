@@ -54,6 +54,8 @@ func ListenToQueue(conn *amqp.Connection, queue string, action ListenerAction) e
 	}()
 
 	<-forever
+	// return never hits till we close channel forever
+	return nil
 }
 
 // SendToQueue broadcasts payload to queue
