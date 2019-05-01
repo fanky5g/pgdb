@@ -6,8 +6,15 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Message represents message received from listener for processing
+type Message struct {
+	MessageID string
+	Timestamp string
+	Body      []byte
+}
+
 // ListenerAction passes back message body to your provided callback for processing
-type ListenerAction func(messageID string, timestamp string, body []byte)
+type ListenerAction func(Message, ack func(bool) error, nack func(bool, bool) error)
 
 // RabbitMQConnect gets rabbitmq connection
 func RabbitMQConnect(address string) *amqp.Connection {
@@ -43,7 +50,7 @@ func ListenToQueue(conn *amqp.Connection, queue string, action ListenerAction) e
 
 	go func() {
 		for d := range msgs {
-			action(d.MessageId, d.Timestamp, d.Body)
+			action(Message{d.MessageId, d.Timestamp, d.Body}, d.Ack, d.Nack)
 		}
 	}()
 
