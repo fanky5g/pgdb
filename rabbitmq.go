@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -55,7 +54,6 @@ func ListenToQueue(conn *amqp.Connection, queue string, durable bool, listenChan
 
 	go func() {
 		for d := range msgs {
-			fmt.Println("for called with delivery", d)
 			processingErr := action(&Message{MessageID: d.MessageId, Timestamp: d.Timestamp, Body: d.Body}, d.Ack, d.Nack)
 			if processingErr != nil {
 				errorChan <- processingErr
@@ -65,7 +63,6 @@ func ListenToQueue(conn *amqp.Connection, queue string, durable bool, listenChan
 
 	// block
 	<-listenChan
-	fmt.Println("returned from block")
 }
 
 // SendToQueue broadcasts payload to queue
