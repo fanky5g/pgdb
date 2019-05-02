@@ -15,7 +15,7 @@ type Message struct {
 }
 
 // ListenerAction passes back message body to your provided callback for processing
-type ListenerAction func(*Message, func(bool) error, func(bool, bool) error) error
+type ListenerAction func(*Message) error
 
 // RabbitMQConnect gets rabbitmq connection
 func RabbitMQConnect(address string) (*amqp.Connection, error) {
@@ -54,7 +54,7 @@ func ListenToQueue(conn *amqp.Connection, queue string, durable bool, listenChan
 
 	go func() {
 		for d := range msgs {
-			processingErr := action(&Message{MessageID: d.MessageId, Timestamp: d.Timestamp, Body: d.Body}, d.Ack, d.Nack)
+			processingErr := action(&Message{MessageID: d.MessageId, Timestamp: d.Timestamp, Body: d.Body})
 			if processingErr != nil {
 				errorChan <- processingErr
 			}
