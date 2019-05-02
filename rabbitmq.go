@@ -15,7 +15,7 @@ type Message struct {
 }
 
 // ListenerAction passes back message body to your provided callback for processing
-type ListenerAction func(Message, func(bool) error, func(bool, bool) error)
+type ListenerAction func(*Message, func(bool) error, func(bool, bool) error) error
 
 // RabbitMQConnect gets rabbitmq connection
 func RabbitMQConnect(address string) (*amqp.Connection, error) {
@@ -23,12 +23,13 @@ func RabbitMQConnect(address string) (*amqp.Connection, error) {
 }
 
 // ListenToQueue creates a non blocking listener to rabbitmq
-func ListenToQueue(conn *amqp.Connection, queue string, durable bool, action ListenerAction) (chan bool, error) {
+func ListenToQueue(conn *amqp.Connection, queue string, durable bool, listenChan chan bool, errorChan chan error, action ListenerAction) {
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		return nil, err
+		errorChan <- err
+		return
 	}
 
 	q, err := ch.QueueDeclare(
@@ -41,19 +42,27 @@ func ListenToQueue(conn *amqp.Connection, queue string, durable bool, action Lis
 	)
 
 	if err != nil {
-		return nil, err
+		errorChan <- err
+		return
 	}
 
 	msgs, err := ch.Consume(q.Name, "", true, false, false, false, nil)
-	forever := make(chan bool)
+	if err != nil {
+		errorChan <- err
+		return
+	}
 
 	go func() {
 		for d := range msgs {
-			action(Message{MessageID: d.MessageId, Timestamp: d.Timestamp, Body: d.Body}, d.Ack, d.Nack)
+			processingErr := action(&Message{MessageID: d.MessageId, Timestamp: d.Timestamp, Body: d.Body}, d.Ack, d.Nack)
+			if processingErr != nil {
+				errorChan <- processingErr
+			}
 		}
 	}()
 
-	return forever, nil
+	// block
+	<-listenChan
 }
 
 // SendToQueue broadcasts payload to queue
