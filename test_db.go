@@ -1,20 +1,26 @@
 package database
 
 import (
+	"fmt"
 	"strings"
+
+	"os"
 
 	"github.com/flavioribeiro/gonfig"
 )
 
-func GetTestDbConfig() (gonfig.Gonfig, error) {
-	reader := strings.NewReader(`
+func getTestDbConfig() (gonfig.Gonfig, error) {
+	dbUser := os.Getenv("DBUser")
+	dbPass := os.Getenv("DBPass")
+
+	reader := strings.NewReader(fmt.Sprintf(`
 		{
-			"dbHost": "localhost:5432",
-			"dbName": "test",
-			"dbUser": "test",
-			"dbPass": "test"
+			"dbHost": "/cloudsql/winst360:us-central1:winst-zero",
+			"dbName": "postgres",
+			"dbUser": "%s",
+			"dbPass": "%s"
 		}
-	`)
+	`, dbUser, dbPass))
 
 	return gonfig.FromJson(reader)
 }
