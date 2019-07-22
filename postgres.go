@@ -23,7 +23,6 @@ func GetPostgresConnectionWithDriver(driver string, config gonfig.Gonfig) (*gorm
 		pgDriver = "postgres"
 	}
 
-	fmt.Println(pgDriver)
 	dbName, err := config.GetString("dbName", "postgres")
 	if err != nil {
 		return nil, err
